@@ -1,0 +1,53 @@
+
+.roboto-new {
+  font-family: "Roboto", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 200;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 100;
+}
+body{
+    font-family: 'Roboto';
+    background-color: #111111;
+    margin: 0;
+}
+
+.header{
+    display: flex;
+    padding: 10px;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+    position: fixed;
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    z-index: 999;
+    background-color: #111111;
+}
+#runn {
+    color:  azure;
+    font-size: 6vh;
+}
+ul{
+    list-style-type: none;
+    padding: 4vh;
+}
+#leaderboard_cont{
+    margin-top: 8vh;
+
+}
+.Leaderboard_spot{
+    display: flex;
+    outline-color: azure;
+    outline-width: 3px;
+    outline-style: outset;
+    min-height: 10vh;
+    margin-bottom: 2vh;
+    min-width: 90vh;
+    color: azure;
+    justify-content: center;
+    font-size: 4vh;
+    font-weight: 600;
+}
