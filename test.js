@@ -98,11 +98,15 @@ function update_feed(feed_obj){
     console.log(current_lap);
     var laps_left_in_stage = Math.max(0, finish - current_lap);
     // If final stage ends the race, show race laps left; otherwise show stage laps left
-    if (feed_obj.stage.stage_num === 3 && finish === laps_in_race) {
-      document.querySelector("#laps").textContent = laps_left + ' TO GO';
-    } else {
-      document.querySelector("#laps").textContent =
+    if (feed_obj.flag_state != 9){
+      if (feed_obj.stage.stage_num === 3 && finish === laps_in_race) {
+        document.querySelector("#laps").textContent = laps_left + ' TO GO';
+      } else {
+        document.querySelector("#laps").textContent =
         laps_left_in_stage + ' TO GO IN STAGE ' + feed_obj.stage.stage_num;
+      }
+    } else {
+      document.querySelector("#laps").textContent = 'RESULTS'
     }
   }
 }

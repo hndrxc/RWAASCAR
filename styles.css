@@ -45,7 +45,7 @@ ul{
     padding: 5vh;
 }
 #leaderboard_cont{
-    margin-top: 15vh;
+    margin: 15vh auto 0;
 }
 .Leaderboard_spot{
     display: flex;
