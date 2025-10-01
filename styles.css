@@ -40,12 +40,23 @@ body{
     color:  azure;
     font-size: 6vh;
 }
+.status{
+    display: flex;
+    justify-content: space-around;
+    color: azure;
+}
+.status--live{
+    background-color: red;
+}
+.status--local{
+    background-color: darkgray;
+}
 ul{
     list-style-type: none;
     padding: 5vh;
 }
 #leaderboard_cont{
-    margin: 15vh auto 0;
+    margin: 18vh auto 0;
 }
 .Leaderboard_spot{
     display: flex;

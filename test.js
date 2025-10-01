@@ -3,39 +3,66 @@ const url = 'https://cf.nascar.com/live/feeds/live-feed.json'
 var get_count = Number(0);
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
-function startFeedPolling(url, intervalMs = 5000, { runImmediately = true } = {}) {
+function startFeedPolling(
+  url,
+  intervalMs = 5000,
+  {
+    runImmediately = true,
+    jitterMs = 180,                      // e.g., 200 to add up to ±200ms jitter
+    onTick = null,                     // (data, { durationMs }) => void
+    onError = null,                    // (error) => void
+  } = {}
+) {
   let running = true;
+  let controller = new AbortController();
 
   (async function loop() {
     if (!runImmediately) await sleep(intervalMs);
 
     while (running) {
-      const t0 = Date.now();
+      const t0 = performance.now();
       try {
-        await get_feed(url);    // gets feed
-        ++get_count;
-        console.log('GET COUNT: ' + get_count)
+        // Create a fresh controller for each request
+        controller = new AbortController();
+        const data = await get_feed(url, { signal: controller.signal });
+        // optional callback (e.g., bump a counter, setStatus('live'), etc.)
+        onTick?.(data, { durationMs: performance.now() - t0 });
       } catch (err) {
-        console.error('get_feed failed:', err);
+        // Swallow aborts quietly; surface real errors
+        if (err.name !== 'AbortError') {
+          onError?.(err);
+          console.error('get_feed failed:', err);
+        }
       }
-      const elapsed = Date.now() - t0;
-      const wait = Math.max(0, intervalMs - elapsed);
-      if (!running) break;       // in case stop() was called during get_feed
+
+      // Compute wait time, honoring work duration + jitter
+      const elapsed = performance.now() - t0;
+      const baseWait = Math.max(0, intervalMs - elapsed);
+      const j = jitterMs ? (Math.random() * 2 * jitterMs - jitterMs) : 0; // [-jitter, +jitter]
+      const wait = Math.max(0, baseWait + j);
+
+      if (!running) break; // if stop() happened during get_feed
       await sleep(wait);
     }
   })();
-  return () => { running = false; };
-}
 
-async function get_feed(url) {
+  // Return a real stop() that also aborts the fetch
+  return function stop() {
+    running = false;
+    try { controller.abort(); } catch {}
+  };
+}
+async function get_feed(url, { signal } = {}) {
+
   try{
-  const live_feed = await fetch(url);
+  const live_feed = await fetch(url, { cache: 'no-store', signal });
   if (!live_feed.ok) throw new Error(`HTTP ${res.status}`);
   var track = await live_feed.json()
   if (!track.vehicles?.length) throw new Error('No active race data.');
   var run = String(track.run_name)
   runName.textContent = run
   console.log('NETWORK GET SUCCESS')
+  update_status(track)
   update_feed(track);
   }
   catch(e)
@@ -45,11 +72,19 @@ async function get_feed(url) {
     const old_track = await old_feed.json();
     if (!old_track.vehicles?.length) throw new Error('Fallback has no vehicles.');
     console.log('LOCAL GET SUCCESS')
+    update_status(track)
     update_feed(old_track);
   }
 }
 const stop = startFeedPolling(url, 5000, { runImmediately: true });
-
+function update_status(feed_obj){
+  if (feed_obj.flag_state != 9){
+    document.querySelector('#status-ribbon').classList.add('status--live')
+  }else{
+    document.querySelector('#status-ribbon').classList.add('status--local')
+    document.querySelector('#status-ribbon').textContent = "Previous Live Race Data"
+  }
+}
 
 /*
 Flag State Key (race-wide conditions):
@@ -83,7 +118,6 @@ function update_feed(feed_obj){
   }
 
   lap_helper();
-  
 
   function lap_helper() {
     console.log(feed_obj.stage.finish_at_lap);
