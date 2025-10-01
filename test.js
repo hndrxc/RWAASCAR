@@ -22,7 +22,6 @@ function startFeedPolling(
     while (running) {
       const t0 = performance.now();
       try {
-        // Create a fresh controller for each request
         controller = new AbortController();
         const data = await get_feed(url, { signal: controller.signal });
         // optional callback (e.g., bump a counter, setStatus('live'), etc.)
@@ -76,7 +75,6 @@ async function get_feed(url, { signal } = {}) {
     update_feed(old_track);
   }
 }
-const stop = startFeedPolling(url, 5000, { runImmediately: true });
 function update_status(feed_obj){
   if (feed_obj.flag_state != 9){
     document.querySelector('#status-ribbon').classList.add('status--live')
@@ -152,7 +150,61 @@ function clean_name(raw_name){
   
   return {cleaned, in_playoffs}
 }
+let pollStop = null;
 
+function startPolling() {
+  if (pollStop) return; // already running
+  pollStop = startFeedPolling(
+    url,
+    5000,
+    {
+      runImmediately: true,
+      jitterMs: 180,
+      onTick: () => {
+        countGets();
+      },
+      onError: () => {
+      }
+    }
+  );
+}
+
+function stopPolling() {
+  if (pollStop) { 
+    try { pollStop(); } catch {}
+    pollStop = null;
+  }
+}
+
+// Update the ribbon to show "Paused" while hidden
+function showPausedRibbon() {
+  const badge = document.getElementById('status-ribbon');
+  if (!badge) return;
+  badge.textContent = 'Paused';
+  // Remove any prior LIVE/LOCAL classes so the look is neutral while paused
+  badge.classList.remove('status--live','status--local');
+}
+
+// Kick off on load
+startPolling();
+
+// Pause when the tab is hidden, resume when visible
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    stopPolling();
+    showPausedRibbon();
+  } else {
+    startPolling();
+  }
+});
+function countGets(){
+  get_count++;
+  console.log('GET COUNT: ' + get_count) 
+  return;
+}
+// Be tidy: stop polling when the page is being unloaded (mobile bfcache safe)
+addEventListener('pagehide', stopPolling);
+addEventListener('beforeunload', stopPolling);
 
 
 
