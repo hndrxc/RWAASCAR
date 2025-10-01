@@ -7,8 +7,9 @@
     <link rel="icon" href="trackicon.png" type="image/png">
     <link rel="stylesheet" href="styles.css"> 
     <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet"> 
+    <link rel="preload" href="fonts/Bold_web_0.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet"> 
 </head>
 <body>
     <div class="header" id="header">
@@ -21,47 +22,46 @@
         </div>
         <div class="leaderboard" id="leaderboard_cont">
             <ul>
-                
-                <li class="Leaderboard_spot" id="P1"></li>
-                <li class="Leaderboard_spot" id="P2"></li>
-                <li class="Leaderboard_spot" id="P3"></li>
-                <li class="Leaderboard_spot" id="P4"></li>
-                <li class="Leaderboard_spot" id="P5"></li>
-                <li class="Leaderboard_spot" id="P6"></li>
-                <li class="Leaderboard_spot" id="P7"></li>
-                <li class="Leaderboard_spot" id="P8"></li>
-                <li class="Leaderboard_spot" id="P9"></li>
-                <li class="Leaderboard_spot" id="P10"></li>
-                <li class="Leaderboard_spot" id="P11"></li>
-                <li class="Leaderboard_spot" id="P12"></li>
-                <li class="Leaderboard_spot" id="P13"></li>
-                <li class="Leaderboard_spot" id="P14"></li>
-                <li class="Leaderboard_spot" id="P15"></li>
-                <li class="Leaderboard_spot" id="P16"></li>
-                <li class="Leaderboard_spot" id="P17"></li>
-                <li class="Leaderboard_spot" id="P18"></li>
-                <li class="Leaderboard_spot" id="P19"></li>
-                <li class="Leaderboard_spot" id="P20"></li>
-                <li class="Leaderboard_spot" id="P21"></li>
-                <li class="Leaderboard_spot" id="P22"></li>
-                <li class="Leaderboard_spot" id="P23"></li>
-                <li class="Leaderboard_spot" id="P24"></li>
-                <li class="Leaderboard_spot" id="P25"></li>
-                <li class="Leaderboard_spot" id="P26"></li>
-                <li class="Leaderboard_spot" id="P27"></li>
-                <li class="Leaderboard_spot" id="P28"></li>
-                <li class="Leaderboard_spot" id="P29"></li>
-                <li class="Leaderboard_spot" id="P30"></li>
-                <li class="Leaderboard_spot" id="P31"></li>
-                <li class="Leaderboard_spot" id="P32"></li>
-                <li class="Leaderboard_spot" id="P33"></li>
-                <li class="Leaderboard_spot" id="P34"></li>
-                <li class="Leaderboard_spot" id="P35"></li>
-                <li class="Leaderboard_spot" id="P36"></li>
-                <li class="Leaderboard_spot" id="P37"></li>
-                <li class="Leaderboard_spot" id="P38"></li>
-                <li class="Leaderboard_spot" id="P39"></li>
-                <li class="Leaderboard_spot" id="P40"></li>
+                <li class="Leaderboard_spot" id="P1"><div class="position_tag">P1</div></li>
+                <li class="Leaderboard_spot" id="P2"><div class="position_tag">P2</div></li>
+                <li class="Leaderboard_spot" id="P3"><div class="position_tag">P3</div></li>
+                <li class="Leaderboard_spot" id="P4"><div class="position_tag">P4</div></li>
+                <li class="Leaderboard_spot" id="P5"><div class="position_tag">P5</div></li>
+                <li class="Leaderboard_spot" id="P6"><div class="position_tag">P6</div></li>
+                <li class="Leaderboard_spot" id="P7"><div class="position_tag">P7</div></li>
+                <li class="Leaderboard_spot" id="P8"><div class="position_tag">P8</div></li>
+                <li class="Leaderboard_spot" id="P9"><div class="position_tag">P9</div></li>
+                <li class="Leaderboard_spot" id="P10"><div class="position_tag">P10</div></li>
+                <li class="Leaderboard_spot" id="P11"><div class="position_tag">P11</div></li>
+                <li class="Leaderboard_spot" id="P12"><div class="position_tag">P12</div></li>
+                <li class="Leaderboard_spot" id="P13"><div class="position_tag">P13</div></li>
+                <li class="Leaderboard_spot" id="P14"><div class="position_tag">P14</div></li>
+                <li class="Leaderboard_spot" id="P15"><div class="position_tag">P15</div></li>
+                <li class="Leaderboard_spot" id="P16"><div class="position_tag">P16</div></li>
+                <li class="Leaderboard_spot" id="P17"><div class="position_tag">P17</div></li>
+                <li class="Leaderboard_spot" id="P18"><div class="position_tag">P18</div></li>
+                <li class="Leaderboard_spot" id="P19"><div class="position_tag">P19</div></li>
+                <li class="Leaderboard_spot" id="P20"><div class="position_tag">P20</div></li>
+                <li class="Leaderboard_spot" id="P21"><div class="position_tag">P21</div></li>
+                <li class="Leaderboard_spot" id="P22"><div class="position_tag">P22</div></li>
+                <li class="Leaderboard_spot" id="P23"><div class="position_tag">P23</div></li>
+                <li class="Leaderboard_spot" id="P24"><div class="position_tag">P24</div></li>
+                <li class="Leaderboard_spot" id="P25"><div class="position_tag">P25</div></li>
+                <li class="Leaderboard_spot" id="P26"><div class="position_tag">P26</div></li>
+                <li class="Leaderboard_spot" id="P27"><div class="position_tag">P27</div></li>
+                <li class="Leaderboard_spot" id="P28"><div class="position_tag">P28</div></li>
+                <li class="Leaderboard_spot" id="P29"><div class="position_tag">P29</div></li>
+                <li class="Leaderboard_spot" id="P30"><div class="position_tag">P30</div></li>
+                <li class="Leaderboard_spot" id="P31"><div class="position_tag">P31</div></li>
+                <li class="Leaderboard_spot" id="P32"><div class="position_tag">P32</div></li>
+                <li class="Leaderboard_spot" id="P33"><div class="position_tag">P33</div></li>
+                <li class="Leaderboard_spot" id="P34"><div class="position_tag">P34</div></li>
+                <li class="Leaderboard_spot" id="P35"><div class="position_tag">P35</div></li>
+                <li class="Leaderboard_spot" id="P36"><div class="position_tag">P36</div></li>
+                <li class="Leaderboard_spot" id="P37"><div class="position_tag">P37</div></li>
+                <li class="Leaderboard_spot" id="P38"><div class="position_tag">P38</div></li>
+                <li class="Leaderboard_spot" id="P39"><div class="position_tag">P39</div></li>
+                <li class="Leaderboard_spot" id="P40"><div class="position_tag">P40</div></li>
             </ul>
         </div>
     </div>

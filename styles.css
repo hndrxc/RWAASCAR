@@ -1,4 +1,10 @@
-
+@font-face {
+  font-family: "PlaceBold";
+  src: url("fonts/Bold_web_0.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
 .roboto-new {
   font-family: "Roboto", sans-serif;
   font-optical-sizing: auto;
@@ -33,12 +39,14 @@ body{
     color:  azure;
     font-size: 6vh;
     justify-content: center;
+    font-weight: bold;
 }
 #laps{
     display: flex;
     justify-content: center;
     color:  azure;
     font-size: 6vh;
+    font-weight: bold;
 }
 .status{
     display: flex;
@@ -58,6 +66,31 @@ ul{
 #leaderboard_cont{
     margin: 18vh auto 0;
 }
+.position_tag {
+    display: flex;
+    color:azure;
+    text-align: center;
+    padding-left: 6vw;
+    font-family: "PlaceBold";
+}
+.Driver_name{
+    display: flex;
+    color:azure;
+    text-align: center;
+    padding-left: 10vw;
+}
+.info_cont{
+    display: flex;
+    text-align: center;
+    justify-content: flex-end;
+    flex: 1;
+}
+.delta{
+    display: flex;
+    color:azure;
+    text-align: center;
+}
+
 .Leaderboard_spot{
     display: flex;
     outline-color: azure;
@@ -67,7 +100,8 @@ ul{
     margin-bottom: 2vh;
     min-width: 90vh;
     color: azure;
-    justify-content: center;
+    justify-content: flex-start;
+    align-items: center;
     font-size: 4vh;
     font-weight: 600;
 }

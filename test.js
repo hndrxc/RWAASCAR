@@ -105,11 +105,15 @@ function update_feed(feed_obj){
     const place = document.querySelector(`#P${i}`)
     //const driver_name = (feed_obj.vehicles[i].driver.full_name).replace(/^\*\s*|\s*\(P\)$/g, "");
     const {cleaned : driver_name , in_playoffs}  = clean_name(feed_obj.vehicles[i-1].driver.full_name) 
-    place.textContent = driver_name
+    // place.textContent = driver_name
     if (in_playoffs){
       place.classList.add("playoff_spot"); // colors the outline yellow for playoffs 
     }
+    
+    display_name(place, driver_name)
+    display_info(place,feed_obj.vehicles[i-1])
   }
+
   for (let i = vehicles.length + 1; i <= 40; i++) {
     const el = document.querySelector(`#P${i}`);
     if (el && el.parentNode) el.parentNode.removeChild(el);
@@ -149,6 +153,31 @@ function clean_name(raw_name){
     .replace(/\s*(\(P\)|\(i\)|#)$/, "").trim(); // remove (P), (i), or # at end
   
   return {cleaned, in_playoffs}
+}
+function display_name(place, name){
+    const nameEl = place.querySelector('.Driver_name') || (() => {
+    const d = document.createElement('div');
+    d.className = 'Driver_name';
+    place.appendChild(d);
+    return d;
+  })();
+  nameEl.textContent = name
+}
+function display_info(place, vehicle){
+
+    const info_contEl = place.querySelector('.info_cont') || (() => {
+    const d = document.createElement('div');
+    d.className = 'info_cont';
+    place.appendChild(d);
+    return d;
+  })();
+  const deltaEl = place.querySelector('.delta') || (() => {
+    const d = document.createElement('div');
+    d.className = 'delta';
+    info_contEl.appendChild(d);
+    return d;
+  })();
+  deltaEl.textContent = vehicle.delta
 }
 let pollStop = null;
 
