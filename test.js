@@ -1,18 +1,66 @@
 const para = document.getElementById("runn");
 const url = 'https://cf.nascar.com/live/feeds/live-feed.json'
+
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+function startFeedPolling(url, intervalMs = 5000, { runImmediately = true } = {}) {
+  let running = true;
+
+  (async function loop() {
+    if (!runImmediately) await sleep(intervalMs);
+
+    while (running) {
+      const t0 = Date.now();
+      try {
+        await get_feed(url);     // gets feed
+      } catch (err) {
+        console.error('get_feed failed:', err);
+      }
+      const elapsed = Date.now() - t0;
+      const wait = Math.max(0, intervalMs - elapsed);
+      if (!running) break;       // in case stop() was called during get_feed
+      await sleep(wait);
+    }
+  })();
+  return () => { running = false; };
+}
+
 async function get_feed(url) {
    var live_feed = fetch(url)
   .then(response => {
-    // Handle the response, e.g., check if it's OK
     if (!response.ok) {
       throw new Error('Network response was not ok');
     }
-    return response.json(); // Or .text(), .blob(), etc., depending on the expected content type
+    return response.json(); 
   })
   .then(data => {
     console.log(data);
+    if (data.vehicles.length == 0){
+        throw new Error('The live race no longer exist, boooo nasacar')
+    }
     var track = Object.create(data)
-    info = track
+    console.log(typeof(track))
+    console.log(track.track_name)
+    var run = String(track.run_name)
+    para.textContent = run
+    update_feed(track)
+  })
+  .catch(error => {
+    console.error('There was a problem with the fetch operation:', error);
+  });
+  var old_feed = fetch('live-feed.json')
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return response.json(); 
+  })
+  .then(data => {
+    console.log(data);
+    if (data.vehicles.length == 0){
+        throw new Error('The old race might have existed but fucked up, boooo me')
+    }
+    var track = Object.create(data)
     console.log(typeof(track))
     console.log(track.track_name)
     var run = String(track.run_name)
@@ -23,7 +71,9 @@ async function get_feed(url) {
     console.error('There was a problem with the fetch operation:', error);
   });
 }
-get_feed(url);
+const stop = startFeedPolling(url, 5000, { runImmediately: true });
+
+
 /*
 Flag State Key (race-wide conditions):
 1 = Green flag (race under way)
@@ -38,24 +88,42 @@ Flag State Key (race-wide conditions):
 */
 
 function update_feed(feed_obj){
+  const disfeed_obj = Object.create(feed_obj)
   para.textContent = String(feed_obj.run_name)
   console.log(feed_obj.vehicles.length)
-  for (let i = 1; i < feed_obj.vehicles.length; i++) {
+  for (let i = 1; i <= feed_obj.vehicles.length; i++) {
     const place = document.querySelector(`#P${i}`)
     //const driver_name = (feed_obj.vehicles[i].driver.full_name).replace(/^\*\s*|\s*\(P\)$/g, "");
-    const {cleaned : driver_name , in_playoffs}  = clean_name(feed_obj.vehicles[i].driver.full_name) 
+    const {cleaned : driver_name , in_playoffs}  = clean_name(feed_obj.vehicles[i-1].driver.full_name) 
     place.textContent = driver_name
     if (in_playoffs){
       place.classList.add("playoff_spot"); // colors the outline yellow for playoffs 
     }
   }
-  for (let i = feed_obj.vehicles.length; i <= 40; i++) {
+  for (let i = feed_obj.vehicles.length + 2; i < 41; i++) {
+    const place = document.querySelector(`#P${i}`)
     console.log(i)
-    const empty= document.querySelector(`#P${i}`)
     console.log(`#P${i}`)
-    empty.parentNode.removeChild(empty)
+    place.parentNode.removeChild(place)
   }
-  document.querySelector("#laps").textContent = String(feed_obj.laps_to_go) + ' / ' + String(feed_obj.laps_in_race)
+  console.log(feed_obj.stage.finish_at_lap);
+  console.log(feed_obj.stage.laps_in_stage); // 137
+  console.log(feed_obj.stage.stage_num); // 3
+  console.log(feed_obj.stage);
+
+  var laps_left = Number(feed_obj.laps_to_go);
+  var finish = Number(feed_obj.stage.finish_at_lap);
+  var laps_in_race = Number(feed_obj.laps_in_race);
+  var current_lap = laps_in_race - laps_left;
+  var laps_left_in_stage = Math.max(0, finish - current_lap);
+  // If final stage ends the race, show race laps left; otherwise show stage laps left
+  if (feed_obj.stage.stage_num === 3 && finish === laps_in_race) {
+    document.querySelector("#laps").textContent = laps_left + ' TO GO';
+  } else {
+    document.querySelector("#laps").textContent =
+      laps_left_in_stage + ' TO GO IN STAGE ' + feed_obj.stage.stage_num;
+  }
+  
 }
 function clean_name(raw_name){
   const in_playoffs = /\(P\)$/.test(raw_name.trim());
