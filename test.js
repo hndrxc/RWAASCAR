@@ -78,6 +78,7 @@ async function get_feed(url, { signal } = {}) {
 function update_status(feed_obj){
   if (feed_obj.flag_state != 9){
     document.querySelector('#status-ribbon').classList.add('status--live')
+    document.querySelector('#status-ribbon').textContent = 'LIVE'
   }else{
     document.querySelector('#status-ribbon').classList.add('status--local')
     document.querySelector('#status-ribbon').textContent = "Previous Live Race Data"
@@ -116,8 +117,7 @@ function update_feed(feed_obj){
     }
     display_info(place,feed_obj.vehicles[i-1])
   }
-  const badge = document.getElementById('status-ribbon');
-  badge.textContent = "LIVE"
+  
 
   for (let i = vehicles.length + 1; i <= 40; i++) {
     const el = document.querySelector(`#P${i}`);
