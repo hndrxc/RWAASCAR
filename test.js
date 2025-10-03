@@ -109,10 +109,15 @@ function update_feed(feed_obj){
     if (in_playoffs){
       place.classList.add("playoff_spot"); // colors the outline yellow for playoffs 
     }
-    
-    display_name(place, driver_name)
+    if (i<=9){
+      display_name(place,String("  "+driver_name))
+    } else{
+      display_name(place,driver_name)
+    }
     display_info(place,feed_obj.vehicles[i-1])
   }
+  const badge = document.getElementById('status-ribbon');
+  badge.textContent = "LIVE"
 
   for (let i = vehicles.length + 1; i <= 40; i++) {
     const el = document.querySelector(`#P${i}`);
@@ -164,7 +169,6 @@ function display_name(place, name){
   nameEl.textContent = name
 }
 function display_info(place, vehicle){
-
     const info_contEl = place.querySelector('.info_cont') || (() => {
     const d = document.createElement('div');
     d.className = 'info_cont';
@@ -201,6 +205,7 @@ function startPolling() {
 function stopPolling() {
   if (pollStop) { 
     try { pollStop(); } catch {}
+    console.log("Paused")
     pollStop = null;
   }
 }
@@ -212,6 +217,13 @@ function showPausedRibbon() {
   badge.textContent = 'Paused';
   // Remove any prior LIVE/LOCAL classes so the look is neutral while paused
   badge.classList.remove('status--live','status--local');
+}
+function showLIVERibbon() {
+  const badge = document.getElementById('status-ribbon');
+  if (!badge) return;
+  badge.textContent = 'LIVE';
+  // Remove any prior LIVE/LOCAL classes so the look is neutral while paused
+  badge.classList.add('status--live');
 }
 
 // Kick off on load
