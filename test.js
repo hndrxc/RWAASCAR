@@ -82,7 +82,9 @@ function update_status(feed_obj){
   }else{
     document.querySelector('#status-ribbon').classList.add('status--local')
     document.querySelector('#status-ribbon').textContent = "Previous Live Race Data"
+    document.querySelector('#P1').classList.add('winner')
   }
+  flag_state(feed_obj.flag_state)
 }
 
 /*
@@ -97,7 +99,29 @@ Flag State Key (race-wide conditions):
 8 = Blue w/ yellow stripe (passing flag, yield to leaders)
 9 = End of race / cool-down
 */
+function flag_state(flag) {
+  const headerEl  = document.querySelector('.header');   // will get .color
+  const headercEl = document.querySelector('#headerc');  // will get .colorc
 
+  const FLAGS = ['1','2','3','4','9'];
+  const f = String(Number(flag)); // handles numbers or numeric strings
+
+  // Ensure base classes exist
+  if (headerEl)  headerEl.classList.add('color');
+  if (headercEl) headercEl.classList.add('colorc');
+
+  // Helper to swap the flag-* class
+  const setFlagClass = (el) => {
+    if (!el) return;
+    // remove any previous flag-*
+    FLAGS.forEach(n => el.classList.remove(`flag-${n}`));
+    // apply new flag if recognized; otherwise fallback (default shadow via var fallback)
+    if (FLAGS.includes(f)) el.classList.add(`flag-${f}`);
+  };
+
+  setFlagClass(headerEl);
+  setFlagClass(headercEl);
+}
 function update_feed(feed_obj){
   const { vehicles } = feed_obj;
   runName.textContent = String(feed_obj.run_name)
@@ -125,7 +149,6 @@ function update_feed(feed_obj){
   }
 
   lap_helper();
-
   function lap_helper() {
     console.log(feed_obj.stage.finish_at_lap);
     console.log(feed_obj.stage.laps_in_stage); // 137
@@ -150,6 +173,7 @@ function update_feed(feed_obj){
       document.querySelector("#laps").textContent = 'RESULTS'
     }
   }
+  
 }
 function clean_name(raw_name){
   const in_playoffs = /\(P\)$/.test(raw_name.trim());
