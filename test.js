@@ -1,6 +1,7 @@
 const runName = document.getElementById("runn");
 const url = 'https://cf.nascar.com/live/feeds/live-feed.json'
 var get_count = Number(0);
+const NBSP = '\u00A0'; 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 function startFeedPolling(
@@ -135,7 +136,7 @@ function update_feed(feed_obj){
       place.classList.add("playoff_spot"); // colors the outline yellow for playoffs 
     }
     if (i<=9){
-      display_name(place,String("  "+driver_name))
+      display_name(place,String(driver_name))
     } else{
       display_name(place,driver_name)
     }

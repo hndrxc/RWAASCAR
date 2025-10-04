@@ -91,6 +91,8 @@ ul{
     text-align: center;
     margin-left: 6vw;
     font-family: "PlaceBold";
+    min-width: 10vw;
+    justify-content: center;
 }
 .Driver_name{
     display: flex;
