@@ -177,13 +177,15 @@ function update_feed(feed_obj){
   
 }
 function clean_name(raw_name){
-  const in_playoffs = /\(P\)$/.test(raw_name.trim());
+  // mark playoffs if "(P)" appears anywhere in the raw string
+  const in_playoffs = /\(P\)/.test(raw_name);
   const cleaned = raw_name
-    .replace(/^\*\s*/, "").trim()       // remove leading asterisk and space
-    .replace(/\s*(\(P\)|\(i\)|#)$/, "").trim(); // remove (P), (i), or # at end
-  
-  return {cleaned, in_playoffs}
+    .replace(/^\*\s*/, "")                     // remove leading asterisk + space
+    .replace(/\s*(?:\((?:P|i)\)|#)+\s*$/g, "") // remove one-or-more trailing flags (#, (P), (i))
+    .trim();
+  return { cleaned, in_playoffs };
 }
+
 function display_name(place, name){
     const nameEl = place.querySelector('.Driver_name') || (() => {
     const d = document.createElement('div');
