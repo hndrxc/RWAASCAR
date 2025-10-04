@@ -77,6 +77,11 @@ body{
 div.viewport{
     width: 98vw;
     height: 98vh;
+    @media (max-aspect-ratio: 3/2) {
+        *{
+            font-size: large;
+        }
+    }
 }
 ul{
     list-style-type: none;
