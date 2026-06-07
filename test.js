@@ -1,5 +1,6 @@
 const runName = document.getElementById("runn");
 const url = 'https://cf.nascar.com/live/feeds/live-feed.json'
+const POLL_INTERVAL_MS = 1000;
 var get_count = Number(0);
 const NBSP = '\u00A0'; 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -56,7 +57,7 @@ async function get_feed(url, { signal } = {}) {
 
   try{
   const live_feed = await fetch(url, { cache: 'no-store', signal });
-  if (!live_feed.ok) throw new Error(`HTTP ${res.status}`);
+  if (!live_feed.ok) throw new Error(`HTTP ${live_feed.status}`);
   var track = await live_feed.json()
   if (!track.vehicles?.length) throw new Error('No active race data.');
   var run = String(track.run_name)
@@ -64,16 +65,18 @@ async function get_feed(url, { signal } = {}) {
   console.log('NETWORK GET SUCCESS')
   update_status(track)
   update_feed(track);
+  return track;
   }
   catch(e)
   {
     const old_feed = await fetch('live-feed.json');
-    if (!old_feed.ok) throw new Error(`Fallback failed HTTP ${res2.status}`);
+    if (!old_feed.ok) throw new Error(`Fallback failed HTTP ${old_feed.status}`);
     const old_track = await old_feed.json();
     if (!old_track.vehicles?.length) throw new Error('Fallback has no vehicles.');
     console.log('LOCAL GET SUCCESS')
-    update_status(track)
+    update_status(old_track)
     update_feed(old_track);
+    return old_track;
   }
 }
 function update_status(feed_obj){
@@ -216,7 +219,7 @@ function startPolling() {
   if (pollStop) return; // already running
   pollStop = startFeedPolling(
     url,
-    5000,
+    POLL_INTERVAL_MS,
     {
       runImmediately: true,
       jitterMs: 180,
@@ -273,6 +276,5 @@ function countGets(){
 // Be tidy: stop polling when the page is being unloaded (mobile bfcache safe)
 addEventListener('pagehide', stopPolling);
 addEventListener('beforeunload', stopPolling);
-
 
 
