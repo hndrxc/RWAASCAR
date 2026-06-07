@@ -106,7 +106,7 @@ export function RaceDashboard() {
           <Leaderboard
             completed={payload.race.completed}
             inlineDetail={isMobile ? detailContent : null}
-            onSelect={setSelectedId}
+            onSelect={(id) => setSelectedId((prev) => (prev === id ? null : id))}
             reducedMotion={Boolean(reducedMotion)}
             selectedId={selectedStanding?.id ?? null}
             standings={payload.standings}
@@ -212,17 +212,16 @@ export function Leaderboard({
                 </div>
               </button>
             </motion.li>
-            <AnimatePresence initial={false}>
+            <AnimatePresence initial={false} mode="popLayout">
               {isSelected && inlineDetail && (
                 <motion.li
                   aria-label="Driver details"
                   className="detail-panel detail-panel--inline"
                   data-testid="leaderboard-inline-detail"
-                  initial={reducedMotion ? false : { opacity: 0, y: -8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
-                  layout={!reducedMotion}
-                  transition={{ duration: reducedMotion ? 0 : 0.18 }}
+                  initial={reducedMotion ? false : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: reducedMotion ? 0 : 0.15 }}
                 >
                   {inlineDetail}
                 </motion.li>
