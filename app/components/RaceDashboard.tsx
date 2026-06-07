@@ -1,10 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useLiveFeed } from "../hooks/useLiveFeed";
 import { useRaceSnapshots } from "../hooks/useRaceSnapshots";
 import type { NascarVehicle, Standing } from "@/lib/live-feed";
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return;
+    }
+    const mq = window.matchMedia("(max-width: 1024px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  return isMobile;
+}
 
 export function RaceDashboard() {
   const liveFeed = useLiveFeed();
@@ -12,13 +29,32 @@ export function RaceDashboard() {
   const payload = snapshotState.currentSnapshot;
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const reducedMotion = useReducedMotion();
+  const isMobile = useIsMobile();
 
-  const selectedStanding =
-    payload?.standings.find((standing) => standing.id === selectedId) ?? payload?.standings[0];
+  const explicitlySelected = payload?.standings.find((standing) => standing.id === selectedId);
+  const selectedStanding = explicitlySelected ?? (isMobile ? undefined : payload?.standings[0]);
   const selectedVehicle =
     payload && selectedStanding
       ? payload.feed.vehicles?.find((vehicle) => String(vehicle.vehicle_number) === selectedStanding.vehicleNumber)
       : undefined;
+
+  useEffect(() => {
+    if (!isMobile || !selectedId) {
+      return;
+    }
+    const handler = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!target) {
+        return;
+      }
+      if (target.closest(".row-button") || target.closest(".detail-panel")) {
+        return;
+      }
+      setSelectedId(null);
+    };
+    document.addEventListener("click", handler);
+    return () => document.removeEventListener("click", handler);
+  }, [isMobile, selectedId]);
 
   if (!payload) {
     return (
@@ -42,6 +78,18 @@ export function RaceDashboard() {
     source: payload.source
   });
 
+  const detailContent = selectedStanding ? (
+    <DriverDetailPanel
+      fetchedAt={payload.fetchedAt}
+      onHide={isMobile ? () => setSelectedId(null) : undefined}
+      previousSnapshotId={snapshotState.previousSnapshot?.snapshotId}
+      raceCompleted={payload.race.completed}
+      snapshotCount={snapshotState.snapshots.length}
+      standing={selectedStanding}
+      vehicle={selectedVehicle}
+    />
+  ) : null;
+
   return (
     <main className="app-shell">
       <RaceHeader
@@ -57,6 +105,7 @@ export function RaceDashboard() {
         <section className="leaderboard" id="leaderboard_cont" aria-label="Live race leaderboard">
           <Leaderboard
             completed={payload.race.completed}
+            inlineDetail={isMobile ? detailContent : null}
             onSelect={setSelectedId}
             reducedMotion={Boolean(reducedMotion)}
             selectedId={selectedStanding?.id ?? null}
@@ -64,27 +113,22 @@ export function RaceDashboard() {
           />
         </section>
 
-        <AnimatePresence initial={false}>
-          {selectedStanding && (
-            <motion.aside
-              aria-label="Driver details"
-              className="detail-panel"
-              initial={reducedMotion ? false : { opacity: 0, x: 28 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: 28 }}
-              transition={{ duration: reducedMotion ? 0 : 0.18 }}
-            >
-              <DriverDetailPanel
-                fetchedAt={payload.fetchedAt}
-                previousSnapshotId={snapshotState.previousSnapshot?.snapshotId}
-                raceCompleted={payload.race.completed}
-                snapshotCount={snapshotState.snapshots.length}
-                standing={selectedStanding}
-                vehicle={selectedVehicle}
-              />
-            </motion.aside>
-          )}
-        </AnimatePresence>
+        {!isMobile && (
+          <AnimatePresence initial={false}>
+            {selectedStanding && (
+              <motion.aside
+                aria-label="Driver details"
+                className="detail-panel detail-panel--rail"
+                initial={reducedMotion ? false : { opacity: 0, x: 28 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: 28 }}
+                transition={{ duration: reducedMotion ? 0 : 0.18 }}
+              >
+                {detailContent}
+              </motion.aside>
+            )}
+          </AnimatePresence>
+        )}
       </div>
     </main>
   );
@@ -118,6 +162,7 @@ function RaceHeader({ flagState, lapsText, runName, statusLabel, statusTone, tra
 
 type LeaderboardProps = {
   completed: boolean;
+  inlineDetail?: React.ReactNode;
   onSelect: (id: string) => void;
   reducedMotion: boolean;
   selectedId: string | null;
@@ -126,6 +171,7 @@ type LeaderboardProps = {
 
 export function Leaderboard({
   completed,
+  inlineDetail,
   onSelect,
   reducedMotion,
   selectedId,
@@ -134,37 +180,55 @@ export function Leaderboard({
   return (
     <ol>
       {standings.map((standing) => {
+        const isSelected = selectedId === standing.id;
         const rowClassName = [
           "Leaderboard_spot",
           standing.inPlayoffs ? "playoff_spot" : "",
           standing.isWinner || (completed && standing.position === 1) ? "winner" : "",
-          selectedId === standing.id ? "selected" : ""
+          isSelected ? "selected" : ""
         ]
           .filter(Boolean)
           .join(" ");
 
         return (
-          <motion.li
-            className={rowClassName}
-            data-testid="leaderboard-row"
-            key={standing.id}
-            layout={!reducedMotion}
-            transition={{ duration: reducedMotion ? 0 : 0.2 }}
-          >
-            <button
-              aria-label={`Show details for ${standing.driverName}`}
-              className="row-button"
-              onClick={() => onSelect(standing.id)}
-              type="button"
+          <Fragment key={standing.id}>
+            <motion.li
+              className={rowClassName}
+              data-testid="leaderboard-row"
+              layout={!reducedMotion}
+              transition={{ duration: reducedMotion ? 0 : 0.2 }}
             >
-              <div className="position_tag">P{standing.position}</div>
-              <div className="Driver_name">{standing.driverName}</div>
-              <div className="car-number">#{standing.vehicleNumber}</div>
-              <div className="info_cont">
-                <div className="delta">{standing.delta}</div>
-              </div>
-            </button>
-          </motion.li>
+              <button
+                aria-label={`Show details for ${standing.driverName}`}
+                className="row-button"
+                onClick={() => onSelect(standing.id)}
+                type="button"
+              >
+                <div className="position_tag">P{standing.position}</div>
+                <div className="Driver_name">{standing.driverName}</div>
+                <div className="car-number">#{standing.vehicleNumber}</div>
+                <div className="info_cont">
+                  <div className="delta">{standing.delta}</div>
+                </div>
+              </button>
+            </motion.li>
+            <AnimatePresence initial={false}>
+              {isSelected && inlineDetail && (
+                <motion.li
+                  aria-label="Driver details"
+                  className="detail-panel detail-panel--inline"
+                  data-testid="leaderboard-inline-detail"
+                  initial={reducedMotion ? false : { opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
+                  layout={!reducedMotion}
+                  transition={{ duration: reducedMotion ? 0 : 0.18 }}
+                >
+                  {inlineDetail}
+                </motion.li>
+              )}
+            </AnimatePresence>
+          </Fragment>
         );
       })}
     </ol>
@@ -173,6 +237,7 @@ export function Leaderboard({
 
 type DetailPanelProps = {
   fetchedAt: string;
+  onHide?: () => void;
   previousSnapshotId: string | undefined;
   raceCompleted: boolean;
   snapshotCount: number;
@@ -182,6 +247,7 @@ type DetailPanelProps = {
 
 export function DriverDetailPanel({
   fetchedAt,
+  onHide,
   previousSnapshotId,
   raceCompleted,
   snapshotCount,
@@ -197,7 +263,19 @@ export function DriverDetailPanel({
           <p className="detail-kicker">P{standing.position}</p>
           <h2>{standing.driverName}</h2>
         </div>
-        <span className="detail-number">#{standing.vehicleNumber}</span>
+        <div className="detail-header-right">
+          <span className="detail-number">#{standing.vehicleNumber}</span>
+          {onHide && (
+            <button
+              aria-label="Hide driver details"
+              className="detail-hide"
+              onClick={onHide}
+              type="button"
+            >
+              <span aria-hidden="true">×</span>
+            </button>
+          )}
+        </div>
       </div>
 
       <dl className="detail-grid">
